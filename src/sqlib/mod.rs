@@ -1,5 +1,3 @@
-extern crate rustc_serialize;
-
 mod client;
 mod channel;
 

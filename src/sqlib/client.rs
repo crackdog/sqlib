@@ -1,5 +1,8 @@
 // mod client
+
+// use rustc_serialize::json;
 use std::fmt;
+use std::cmp;
 
 /// Client contains information about a TeamSpeak 3 client.
 /// # Example
@@ -21,7 +24,7 @@ use std::fmt;
 ///
 /// assert_eq!("John Doe".to_string(), client_print);
 /// ```
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone, RustcDecodable, RustcEncodable)]
 pub struct Client {
     /// client id
     pub clid: i64,
@@ -47,5 +50,17 @@ impl Client {
 impl fmt::Display for Client {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", &self.client_nickname)
+    }
+}
+
+impl PartialOrd for Client {
+    fn partial_cmp(&self, other: &Client) -> Option<cmp::Ordering> {
+        self.clid.partial_cmp(&other.clid)
+    }
+}
+
+impl Ord for Client {
+    fn cmp(&self, other: &Client) -> cmp::Ordering {
+        self.clid.cmp(&other.clid)
     }
 }
