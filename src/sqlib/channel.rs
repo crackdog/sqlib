@@ -3,6 +3,15 @@
 use sqlib::client::Client;
 use std::fmt;
 
+/// # Example
+/// ```
+/// use ts3_online::sqlib;
+///
+/// let channel = sqlib::Channel::new(0, "test".to_string());
+///
+/// assert!(channel.is_empty());
+/// assert_eq!("test".to_string(), format!("{}", channel));
+/// ```
 #[derive(Debug, Eq, PartialEq, Clone, RustcDecodable, RustcEncodable)]
 pub struct Channel {
     pub cid: i64,
@@ -11,20 +20,20 @@ pub struct Channel {
 }
 
 impl Channel {
-    pub fn is_empty(&self) -> bool {
-        self.clients.is_empty()
-    }
-
-    pub fn clients_len(&self) -> usize {
-        self.clients.len()
-    }
-
     pub fn new(channel_id: i64, name: String) -> Channel {
         Channel {
             cid: channel_id,
             channel_name: name,
             clients: Vec::new(),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.clients.is_empty()
+    }
+
+    pub fn clients_len(&self) -> usize {
+        self.clients.len()
     }
 
     pub fn add_client(&mut self, client: Client) {
@@ -47,6 +56,12 @@ impl Channel {
 
 impl fmt::Display for Channel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.channel_name)
+        try!(write!(f, "{}", self.channel_name));
+        if !self.is_empty() {
+            for client in self.clients.iter() {
+                try!(write!(f, "\n  {}", client));
+            }
+        };
+        Ok(())
     }
 }

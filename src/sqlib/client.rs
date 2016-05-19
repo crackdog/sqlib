@@ -41,6 +41,17 @@ pub struct Client {
 }
 
 impl Client {
+    /// creates a new client from a client id and a nickname
+    pub fn new(client_id: i64, nickname: String) -> Client {
+        Client {
+            clid: client_id,
+            cid: 0,
+            client_database_id: 0,
+            client_nickname: nickname,
+            client_type: 0,
+            connection_connected_time: 0,
+        }
+    }
     /// checks if it is a real client
     pub fn is_client(&self) -> bool {
         self.client_type == 0
