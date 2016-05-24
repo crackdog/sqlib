@@ -1,15 +1,33 @@
 // mod error
-use std::error;
-use std::error::Error as Err;
+use std::error::{self, Error as Err};
 use std::fmt::{self, Display};
 use std::io;
 use std::convert::From;
+use sqlib;
 
+/// # Example
+/// ```
+/// use ts3_online::sqlib::SQError;
+///
+/// let line = "error id=0 msg=ok".to_string();
+///
+/// let err_option = SQError::parse(&line);
+/// let err = match err_option {
+///     Some(err) => err,
+///     None => { panic!("no error found"); },
+/// };
+/// assert_eq!(0, err.id());
+/// ```
 #[derive(Debug)]
 pub struct SQError {
     id: u32,
     msg: String,
     full_msg: String,
+}
+
+// helping function for SQError::parse
+fn is_seperator(c: char) -> bool {
+    c == '=' || c.is_whitespace()
 }
 
 impl SQError {
@@ -22,7 +40,51 @@ impl SQError {
         }
     }
 
-    // pub fn parse(s: String) -> Option<SQError> {
+    pub fn ok() -> SQError {
+        SQError::new(0, "ok".to_string())
+    }
+
+    pub fn parse_is_ok(s: &str) -> sqlib::Result<bool> {
+        let err = match SQError::parse(s) {
+            None => {
+                return Ok(false);
+            }
+            Some(err) => err,
+        };
+        if err == SQError::ok() {
+            Ok(true)
+        } else {
+            Err(Error::from(err))
+        }
+    }
+
+    /// try to parse a String to a SQError
+    pub fn parse(s: &str) -> Option<SQError> {
+        // the str shouldn't be trimmed, because a real error is without
+        // whitespace in the beginning
+        let parts: Vec<&str> = s.splitn(6, is_seperator).collect();
+        if parts.len() < 5 {
+            return None;
+        }
+        if parts[0] != "error" {
+            return None;
+        }
+        if parts[1] != "id" {
+            return None;
+        }
+        let id_result = parts[2].clone().parse::<u32>();
+        let id = match id_result {
+            Err(_) => {
+                return None;
+            }
+            Ok(val) => val,
+        };
+        if parts[3] != "msg" {
+            return None;
+        }
+        let msg = parts[4].to_string().clone();
+        Some(SQError::new(id, msg))
+    }
 
     pub fn id(&self) -> u32 {
         self.id
@@ -32,6 +94,15 @@ impl SQError {
         self.msg.clone()
     }
 }
+
+impl PartialEq for SQError {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for SQError {}
+
 
 impl Display for SQError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -69,6 +140,12 @@ impl error::Error for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.description())
+    }
+}
+
+impl From<&'static str> for Error {
+    fn from(err: &str) -> Error {
+        Error::Other(err.to_string())
     }
 }
 
