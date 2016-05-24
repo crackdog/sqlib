@@ -3,8 +3,10 @@
 use std::fmt;
 use std::net;
 use std::string::String;
-use std::io::{self, BufReader, Error, ErrorKind};
+use std::io::BufReader;
 use std::io::prelude::*;
+use sqlib;
+use sqlib::error::{Error, SQError};
 
 #[derive(Debug)]
 pub struct Connection {
@@ -13,43 +15,60 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(addr: String) -> io::Result<Connection> {
+    pub fn new(addr: String) -> sqlib::Result<Connection> {
         let a = addr.parse().unwrap();
         let c = try!(net::TcpStream::connect(a));
-        Ok(Connection {
+        let mut connection = Connection {
             addr: a,
             conn: BufReader::new(c),
-        })
+        };
+        let mut tmp = String::new();
+        try!(connection.conn.read_line(&mut tmp));
+        if tmp.trim() != "TS3" {
+            return Err(From::from("the given server is not a TS3 server"));
+        }
+        try!(connection.read_line(&mut tmp));
+        Ok(connection)
+    }
+
+    fn read_line<'a>(&mut self, buf: &'a mut String) -> sqlib::Result<&'a str> {
+        let _ = try!(self.conn.read_line(buf));
+        Ok(buf.trim_left_matches(char::is_control))
     }
 
     fn get_stream_mut(&mut self) -> &mut net::TcpStream {
         self.conn.get_mut()
     }
 
-    pub fn send_command<C: Command>(&mut self, cmd: C) -> Result<String, io::Error> {
+    pub fn send_command<C: Command>(&mut self, cmd: C) -> sqlib::Result<String> {
         let cmd = cmd.string();
         if cmd.is_empty() {
-            return Err(Error::new(ErrorKind::Other, "no command"));
+            return Err(Error::from("no command"));
         }
 
         try!(writeln!(self.get_stream_mut(), "{}", cmd));
 
         try!(self.get_stream_mut().flush());
 
-        let mut line = String::new();
         let mut result = String::new();
         loop {
-            try!(self.conn.read_line(&mut line));
-            result = line + "\n";
-            break;
+            let mut line = String::new();
+            let line = try!(self.read_line(&mut line));
+            let ok = try!(SQError::parse_is_ok(line));
+            if ok {
+                break;
+            }
+            result = result + line; // + "\n";
         }
 
         Ok(result)
     }
 
-    pub fn quit(&mut self) -> io::Result<()> {
-        try!(self.send_command("quit").map(|_| ()));
-        self.conn.get_ref().shutdown(net::Shutdown::Both)
+    pub fn quit(&mut self) -> sqlib::Result<()> {
+        try!(writeln!(self.get_stream_mut(), "quit"));
+        try!(self.get_stream_mut().flush());
+        try!(self.conn.get_ref().shutdown(net::Shutdown::Both));
+        Ok(())
     }
 }
 
