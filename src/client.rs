@@ -7,7 +7,7 @@ use std::cmp;
 /// Client contains information about a TeamSpeak 3 client.
 /// # Example
 /// ```
-/// use ts3_online::sqlib;
+/// use sqlib;
 ///
 /// let client = sqlib::Client {
 ///     clid: 1,

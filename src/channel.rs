@@ -1,11 +1,11 @@
 // mod channel
 
-use sqlib::client::Client;
+use client::Client;
 use std::fmt;
 
 /// # Example
 /// ```
-/// use ts3_online::sqlib;
+/// use sqlib;
 ///
 /// let channel = sqlib::Channel::new(0, "test".to_string());
 ///

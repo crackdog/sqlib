@@ -1,5 +1,5 @@
 [package]
-name = "ts3-online"
+name = "sqlib"
 version = "0.1.0"
 authors = ["Florian Kahllund <flo.kahllund@gmail.com>"]
 

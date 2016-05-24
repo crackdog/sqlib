@@ -5,8 +5,7 @@ use std::net;
 use std::string::String;
 use std::io::BufReader;
 use std::io::prelude::*;
-use sqlib;
-use sqlib::error::{Error, SQError};
+use error::{Error, SQError};
 
 #[derive(Debug)]
 pub struct Connection {
@@ -15,7 +14,7 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(addr: String) -> sqlib::Result<Connection> {
+    pub fn new(addr: String) -> super::Result<Connection> {
         let a = addr.parse().unwrap();
         let c = try!(net::TcpStream::connect(a));
         let mut connection = Connection {
@@ -31,7 +30,7 @@ impl Connection {
         Ok(connection)
     }
 
-    fn read_line<'a>(&mut self, buf: &'a mut String) -> sqlib::Result<&'a str> {
+    fn read_line<'a>(&mut self, buf: &'a mut String) -> super::Result<&'a str> {
         let _ = try!(self.conn.read_line(buf));
         Ok(buf.trim_left_matches(char::is_control))
     }
@@ -40,7 +39,7 @@ impl Connection {
         self.conn.get_mut()
     }
 
-    pub fn send_command<C: Command>(&mut self, cmd: C) -> sqlib::Result<String> {
+    pub fn send_command<C: Command>(&mut self, cmd: C) -> super::Result<String> {
         let cmd = cmd.string();
         if cmd.is_empty() {
             return Err(Error::from("no command"));
@@ -64,7 +63,7 @@ impl Connection {
         Ok(result)
     }
 
-    pub fn quit(&mut self) -> sqlib::Result<()> {
+    pub fn quit(&mut self) -> super::Result<()> {
         try!(writeln!(self.get_stream_mut(), "quit"));
         try!(self.get_stream_mut().flush());
         try!(self.conn.get_ref().shutdown(net::Shutdown::Both));

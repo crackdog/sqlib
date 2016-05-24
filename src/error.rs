@@ -3,11 +3,10 @@ use std::error::{self, Error as Err};
 use std::fmt::{self, Display};
 use std::io;
 use std::convert::From;
-use sqlib;
 
 /// # Example
 /// ```
-/// use ts3_online::sqlib::SQError;
+/// use sqlib::SQError;
 ///
 /// let line = "error id=0 msg=ok".to_string();
 ///
@@ -44,7 +43,7 @@ impl SQError {
         SQError::new(0, "ok".to_string())
     }
 
-    pub fn parse_is_ok(s: &str) -> sqlib::Result<bool> {
+    pub fn parse_is_ok(s: &str) -> super::Result<bool> {
         let err = match SQError::parse(s) {
             None => {
                 return Ok(false);
@@ -143,8 +142,8 @@ impl fmt::Display for Error {
     }
 }
 
-impl From<&'static str> for Error {
-    fn from(err: &str) -> Error {
+impl<'a> From<&'a str> for Error {
+    fn from(err: &'a str) -> Error {
         Error::Other(err.to_string())
     }
 }
