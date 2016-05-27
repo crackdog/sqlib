@@ -24,7 +24,7 @@ use map::*;
 ///
 /// let client_print = format!("{}", client);
 ///
-/// assert_eq!("John Doe".to_string(), client_print);
+/// assert_eq!("John Doe (0)".to_string(), client_print);
 /// ```
 #[derive(Debug, Clone, RustcDecodable, RustcEncodable)]
 pub struct Client {
