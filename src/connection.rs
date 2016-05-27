@@ -6,6 +6,7 @@ use std::string::String;
 use std::io::BufReader;
 use std::io::prelude::*;
 use error::{Error, SQError};
+use command::Command;
 
 #[derive(Debug)]
 pub struct Connection {
@@ -15,7 +16,7 @@ pub struct Connection {
 
 impl Connection {
     pub fn new(addr: String) -> super::Result<Connection> {
-        let a = addr.parse().unwrap();
+        let a = try!(addr.parse());
         let c = try!(net::TcpStream::connect(a));
         let mut connection = Connection {
             addr: a,
@@ -39,13 +40,15 @@ impl Connection {
         self.conn.get_mut()
     }
 
-    pub fn send_command<C: Command>(&mut self, cmd: C) -> super::Result<String> {
-        let cmd = cmd.string();
-        if cmd.is_empty() {
+    pub fn send_command<C>(&mut self, command: C) -> super::Result<String>
+        where C: Command
+    {
+        let command = command.string();
+        if command.is_empty() {
             return Err(Error::from("no command"));
         }
 
-        try!(writeln!(self.get_stream_mut(), "{}", cmd));
+        try!(writeln!(self.get_stream_mut(), "{}", command));
 
         try!(self.get_stream_mut().flush());
 
@@ -63,6 +66,18 @@ impl Connection {
         Ok(result)
     }
 
+    pub fn send_command_vec<C>(&mut self, commands: C) -> super::Result<Vec<String>>
+        where C: IntoIterator,
+              C::Item: Command
+    {
+        let mut results = Vec::new();
+        for cmd in commands {
+            let res = try!(self.send_command(cmd));
+            results.push(res);
+        }
+        Ok(results)
+    }
+
     pub fn quit(&mut self) -> super::Result<()> {
         try!(writeln!(self.get_stream_mut(), "quit"));
         try!(self.get_stream_mut().flush());
@@ -74,21 +89,5 @@ impl Connection {
 impl fmt::Display for Connection {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", &self.addr)
-    }
-}
-
-pub trait Command {
-    fn string(&self) -> String;
-}
-
-impl<'a> Command for &'a str {
-    fn string(&self) -> String {
-        self.to_string()
-    }
-}
-
-impl Command for String {
-    fn string(&self) -> String {
-        self.clone()
     }
 }

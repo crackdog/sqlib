@@ -3,6 +3,7 @@ use std::error::{self, Error as Err};
 use std::fmt::{self, Display};
 use std::io;
 use std::convert::From;
+use std::net::AddrParseError;
 
 /// # Example
 /// ```
@@ -163,5 +164,11 @@ impl From<io::Error> for Error {
 impl From<SQError> for Error {
     fn from(err: SQError) -> Error {
         Error::SQ(err)
+    }
+}
+
+impl From<AddrParseError> for Error {
+    fn from(err: AddrParseError) -> Error {
+        Error::Other(err.description().to_string())
     }
 }

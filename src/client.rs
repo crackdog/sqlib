@@ -1,8 +1,10 @@
 // mod client
 
-// use rustc_serialize::json;
 use std::fmt;
 use std::cmp;
+use std::ops::Deref;
+use std::str::FromStr;
+use map::*;
 
 /// Client contains information about a TeamSpeak 3 client.
 /// # Example
@@ -24,7 +26,7 @@ use std::cmp;
 ///
 /// assert_eq!("John Doe".to_string(), client_print);
 /// ```
-#[derive(Debug, Eq, PartialEq, Clone, RustcDecodable, RustcEncodable)]
+#[derive(Debug, Clone, RustcDecodable, RustcEncodable)]
 pub struct Client {
     /// client id
     pub clid: i64,
@@ -40,29 +42,80 @@ pub struct Client {
     pub connection_connected_time: i64,
 }
 
-impl Client {
-    /// creates a new client from a client id and a nickname
-    pub fn new(client_id: i64, nickname: String) -> Client {
+impl Default for Client {
+    fn default() -> Client {
         Client {
-            clid: client_id,
+            clid: 0,
             cid: 0,
             client_database_id: 0,
-            client_nickname: nickname,
+            client_nickname: String::new(),
             client_type: 0,
             connection_connected_time: 0,
         }
+    }
+}
+
+impl Client {
+    /// creates a new client from a client id and a nickname
+    pub fn new(client_id: i64, nickname: String) -> Client {
+        let mut client = Client::default();
+        client.clid = client_id;
+        client.client_nickname = nickname;
+        client
     }
     /// checks if it is a real client
     pub fn is_client(&self) -> bool {
         self.client_type == 0
     }
+
+    pub fn from_map(map: &StringMap) -> Client {
+        let mut client = Client::default();
+        client.mut_from_map(map);
+        client
+    }
+
+    pub fn update_from_map(client: Client, map: &StringMap) -> Client {
+        let mut client = client.clone();
+        client.mut_from_map(map);
+        client
+    }
+
+    pub fn mut_from_map(&mut self, map: &StringMap) {
+        update_from_map(map, "clid", &mut self.clid);
+        update_from_map(map, "cid", &mut self.cid);
+        update_from_map(map, "client_database_id", &mut self.client_database_id);
+        update_from_map(map, "client_nickname", &mut self.client_nickname);
+        update_from_map(map, "client_type", &mut self.client_type);
+        update_from_map(map,
+                        "connection_connected_time",
+                        &mut self.connection_connected_time);
+    }
+}
+
+impl FromStr for Client {
+    type Err = super::Error;
+    fn from_str(s: &str) -> super::Result<Self> {
+        let map = to_map(s);
+        Ok(Client::from_map(&map))
+    }
 }
 
 impl fmt::Display for Client {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", &self.client_nickname)
+        write!(f,
+               "{} ({})",
+               &self.client_nickname,
+               self.connection_connected_time / 1000 / 60) // TODO: generate exact time string
     }
 }
+
+impl PartialEq for Client {
+    fn eq(&self, other: &Client) -> bool {
+        self.clid.eq(&other.clid)
+    }
+}
+
+impl Eq for Client {}
 
 impl PartialOrd for Client {
     fn partial_cmp(&self, other: &Client) -> Option<cmp::Ordering> {
@@ -73,5 +126,63 @@ impl PartialOrd for Client {
 impl Ord for Client {
     fn cmp(&self, other: &Client) -> cmp::Ordering {
         self.clid.cmp(&other.clid)
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
+pub struct ClientList(Vec<Client>);
+
+impl ClientList {
+    pub fn vec(&self) -> &Vec<Client> {
+        let &ClientList(ref v) = self;
+        v
+    }
+
+    pub fn get_mut(&mut self) -> &mut Vec<Client> {
+        let &mut ClientList(ref mut v) = self;
+        v
+    }
+
+    pub fn get_vec(self) -> Vec<Client> {
+        let ClientList(v) = self;
+        v
+    }
+
+    pub fn from_maps(maps: &Vec<StringMap>) -> ClientList {
+        let mut vec = Vec::new();
+        for map in maps.iter() {
+            let client = Client::from_map(map);
+            vec.push(client);
+        }
+        ClientList(vec)
+    }
+}
+
+impl FromStr for ClientList {
+    type Err = super::Error;
+    fn from_str(s: &str) -> super::Result<Self> {
+        let maps = s.split('|').map(to_map).collect();
+        Ok(ClientList::from_maps(&maps))
+    }
+}
+
+impl Deref for ClientList {
+    type Target = Vec<Client>;
+    fn deref(&self) -> &Vec<Client> {
+        self.vec()
+    }
+}
+
+impl fmt::Display for ClientList {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f, "[ "));
+        let mut cls = self.vec().iter();
+        if cls.len() > 0 {
+            try!(write!(f, "{}", cls.next().unwrap()));
+        }
+        for client in cls {
+            try!(write!(f, ", {}", client));
+        }
+        write!(f, " ]")
     }
 }
