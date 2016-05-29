@@ -5,6 +5,7 @@ use std::cmp;
 use std::ops::Deref;
 use std::str::FromStr;
 use map::*;
+use escaping::*;
 
 /// Client contains information about a TeamSpeak 3 client.
 /// # Example
@@ -61,11 +62,16 @@ impl Client {
         let mut client = Client::default();
         client.clid = client_id;
         client.client_nickname = nickname;
+        client.unescape();
         client
     }
     /// checks if it is a real client
     pub fn is_client(&self) -> bool {
         self.client_type == 0
+    }
+
+    fn unescape(&mut self) {
+        self.client_nickname = unescape(&self.client_nickname);
     }
 
     pub fn from_map(map: &StringMap) -> Client {
@@ -89,6 +95,22 @@ impl Client {
         update_from_map(map,
                         "connection_connected_time",
                         &mut self.connection_connected_time);
+        self.unescape();
+    }
+
+    fn connection_connected_time_string(&self) -> String {
+        let mut raw_seconds = self.connection_connected_time / 1000;
+        let hours = raw_seconds / 3600;
+        raw_seconds = raw_seconds % 3600;
+        let minutes = raw_seconds / 60;
+        let seconds = raw_seconds % 60;
+        if hours > 0 {
+            format!("{:02}:{:02}:{:02}", hours, minutes, seconds)
+        } else if minutes > 0 {
+            format!("{:02}:{:02}", minutes, seconds)
+        } else {
+            format!("{}", seconds)
+        }
     }
 }
 
@@ -105,7 +127,7 @@ impl fmt::Display for Client {
         write!(f,
                "{} ({})",
                &self.client_nickname,
-               self.connection_connected_time / 1000 / 60) // TODO: generate exact time string
+               self.connection_connected_time_string())
     }
 }
 
@@ -146,6 +168,11 @@ impl ClientList {
     pub fn get_vec(self) -> Vec<Client> {
         let ClientList(v) = self;
         v
+    }
+
+    pub fn filter_clients(&self) -> ClientList {
+        let new_vec = self.iter().map(Clone::clone).filter(|c| c.is_client()).collect();
+        ClientList(new_vec)
     }
 
     pub fn from_maps(maps: &Vec<StringMap>) -> ClientList {
