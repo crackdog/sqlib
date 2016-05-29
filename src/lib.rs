@@ -6,6 +6,7 @@ mod connection;
 mod command;
 mod error;
 pub mod map;
+pub mod escaping;
 
 use std::result;
 
