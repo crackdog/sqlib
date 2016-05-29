@@ -6,7 +6,10 @@ use std::string::String;
 use std::io::BufReader;
 use std::io::prelude::*;
 use error::{Error, SQError};
+use client::ClientList;
+use channel::ChannelList;
 use command::Command;
+use map::to_map;
 
 #[derive(Debug)]
 pub struct Connection {
@@ -79,10 +82,39 @@ impl Connection {
     }
 
     pub fn quit(&mut self) -> super::Result<()> {
-        try!(writeln!(self.get_stream_mut(), "quit"));
-        try!(self.get_stream_mut().flush());
+        try!(self.send_command("quit"));
         try!(self.conn.get_ref().shutdown(net::Shutdown::Both));
         Ok(())
+    }
+
+    pub fn clientlist(&mut self) -> super::Result<ClientList> {
+        let s = try!(self.send_command("clientlist"));
+        let cl = try!(s.parse());
+        Ok(cl)
+    }
+
+    pub fn clientlist_with_info(&mut self) -> super::Result<ClientList> {
+        let mut clients = try!(self.clientlist());
+        for client in clients.get_mut().iter_mut() {
+            let command = format!("clientinfo clid={}", client.clid);
+            let str = try!(self.send_command(command));
+            let map = to_map(&str);
+            client.mut_from_map(&map);
+        }
+        Ok(clients)
+    }
+
+    pub fn channellist(&mut self) -> super::Result<ChannelList> {
+        let s = try!(self.send_command("channellist"));
+        let cl = try!(s.parse());
+        Ok(cl)
+    }
+
+    pub fn channellist_with_clients(&mut self) -> super::Result<ChannelList> {
+        let clients = try!(self.clientlist_with_info());
+        let mut channels = try!(self.channellist());
+        channels.merge_clients(&clients);
+        Ok(channels)
     }
 }
 
