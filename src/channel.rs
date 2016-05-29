@@ -6,6 +6,7 @@ use std::cmp;
 use std::ops::Deref;
 use std::str::FromStr;
 use map::*;
+use escaping::*;
 
 /// # Example
 /// ```
@@ -38,7 +39,12 @@ impl Channel {
         let mut channel = Channel::default();
         channel.cid = channel_id;
         channel.channel_name = name;
+        channel.unescape();
         channel
+    }
+
+    fn unescape(&mut self) {
+        self.channel_name = unescape(&self.channel_name);
     }
 
     pub fn from_map(map: &StringMap) -> Channel {
@@ -56,6 +62,7 @@ impl Channel {
     pub fn mut_from_map(&mut self, map: &StringMap) {
         update_from_map(map, "cid", &mut self.cid);
         update_from_map(map, "channel_name", &mut self.channel_name);
+        self.unescape();
     }
 
     pub fn is_empty(&self) -> bool {
