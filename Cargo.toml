@@ -5,3 +5,4 @@ authors = ["Florian Kahllund <flo.kahllund@gmail.com>"]
 
 [dependencies]
 rustc-serialize = "*"
+hyper = "*"
