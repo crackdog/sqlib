@@ -1,5 +1,6 @@
 // mod client
 
+use rustc_serialize::json;
 use std::fmt;
 use std::cmp;
 use std::ops::Deref;
@@ -112,6 +113,10 @@ impl Client {
             format!("{}", seconds)
         }
     }
+
+    pub fn as_json(&self) -> String {
+        json::encode(self).unwrap_or(String::new())
+    }
 }
 
 impl FromStr for Client {
@@ -182,6 +187,10 @@ impl ClientList {
             vec.push(client);
         }
         ClientList(vec)
+    }
+
+    pub fn as_json(&self) -> String {
+        json::encode(self.vec()).unwrap_or(String::new())
     }
 }
 

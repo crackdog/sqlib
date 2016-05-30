@@ -1,5 +1,6 @@
 // mod channel
 
+use rustc_serialize::json;
 use client::{Client, ClientList};
 use std::fmt;
 use std::cmp;
@@ -89,6 +90,10 @@ impl Channel {
             .collect();
         self.clients = new_clients;
     }
+
+    pub fn as_json(&self) -> String {
+        json::encode(self).unwrap_or(String::new())
+    }
 }
 
 impl FromStr for Channel {
@@ -172,6 +177,10 @@ impl ChannelList {
         for client in clients.iter() {
             self.insert_client(client);
         }
+    }
+
+    pub fn as_json(&self) -> String {
+        json::encode(self.vec()).unwrap_or(String::new())
     }
 }
 
