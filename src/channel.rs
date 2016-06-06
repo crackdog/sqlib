@@ -139,6 +139,12 @@ impl Ord for Channel {
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct ChannelList(Vec<Channel>);
 
+impl Default for ChannelList {
+    fn default() -> ChannelList {
+        ChannelList(Vec::new())
+    }
+}
+
 impl ChannelList {
     pub fn vec(&self) -> &Vec<Channel> {
         let &ChannelList(ref v) = self;
