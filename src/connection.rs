@@ -9,7 +9,7 @@ use error::{Error, SQError};
 use client::ClientList;
 use channel::ChannelList;
 use command::Command;
-use map::to_map;
+use map::*;
 
 #[derive(Debug)]
 pub struct Connection {
@@ -18,7 +18,8 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(addr: String) -> super::Result<Connection> {
+    pub fn new(addr: &str) -> super::Result<Connection> {
+        let addr = addr.to_string();
         let a = try!(addr.parse());
         let c = try!(net::TcpStream::connect(a));
         let mut connection = Connection {
@@ -69,6 +70,13 @@ impl Connection {
         Ok(result)
     }
 
+    pub fn send_command_to_map<C>(&mut self, command: C) -> super::Result<StringMap>
+        where C: Command
+    {
+        let result = try!(self.send_command(command));
+        Ok(to_map(&result))
+    }
+
     pub fn send_command_vec<C>(&mut self, commands: C) -> super::Result<Vec<String>>
         where C: IntoIterator,
               C::Item: Command
@@ -84,6 +92,22 @@ impl Connection {
     pub fn quit(&mut self) -> super::Result<()> {
         try!(self.send_command("quit"));
         try!(self.conn.get_ref().shutdown(net::Shutdown::Both));
+        Ok(())
+    }
+
+    pub fn use_server_id(&mut self, id: u64) -> super::Result<()> {
+        self.send_command(format!("use {}", id)).map(|_| ())
+    }
+
+    pub fn login(&mut self, name: &str, pw: &str) -> super::Result<()> {
+        self.send_command(format!("login {} {}", name, pw)).map(|_| ())
+    }
+
+    pub fn change_nickname(&mut self, nickname: &str) -> super::Result<()> {
+        let map = try!(self.send_command_to_map("whoami"));
+        let id = try!(map.get("client_id").ok_or("error at collecting client_id"));
+        let cmd = format!("clientupdate clid={} client_nickname={}", id, nickname);
+        let _ = try!(self.send_command(cmd));
         Ok(())
     }
 
