@@ -4,6 +4,8 @@ use std::fmt::{self, Display};
 use std::io;
 use std::convert::From;
 use std::net::AddrParseError;
+use std::sync::PoisonError;
+use escaping::unescape;
 
 /// # Example
 /// ```
@@ -83,7 +85,7 @@ impl SQError {
             return None;
         }
         let msg = parts[4].to_string().clone();
-        Some(SQError::new(id, msg))
+        Some(SQError::new(id, unescape(&msg)))
     }
 
     pub fn id(&self) -> u32 {
@@ -170,5 +172,11 @@ impl From<SQError> for Error {
 impl From<AddrParseError> for Error {
     fn from(err: AddrParseError) -> Error {
         Error::Other(err.description().to_string())
+    }
+}
+
+impl<T> From<PoisonError<T>> for Error {
+    fn from(err: PoisonError<T>) -> Error {
+        Error::Other(format!("{}", err))
     }
 }
