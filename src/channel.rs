@@ -9,6 +9,7 @@ use std::str::FromStr;
 use map::*;
 use escaping::*;
 
+/// Channel contains a TeamSpeak 3 channel.
 /// # Example
 /// ```
 /// use sqlib;
@@ -36,6 +37,7 @@ impl Default for Channel {
 }
 
 impl Channel {
+    /// Create an empty Channel from a channel id and a name.
     pub fn new(channel_id: i64, name: String) -> Channel {
         let mut channel = Channel::default();
         channel.cid = channel_id;
@@ -48,18 +50,21 @@ impl Channel {
         self.channel_name = unescape(&self.channel_name);
     }
 
+    /// Create a new Channel from a given map.
     pub fn from_map(map: &StringMap) -> Channel {
         let mut channel = Channel::default();
         channel.mut_from_map(map);
         channel
     }
 
+    /// Create a new Channel from a given Channel and a map.
     pub fn update_from_map(channel: Channel, map: &StringMap) -> Channel {
         let mut channel = channel.clone();
         channel.mut_from_map(map);
         channel
     }
 
+    /// Mutate self from a given map.
     pub fn mut_from_map(&mut self, map: &StringMap) {
         update_from_map(map, "cid", &mut self.cid);
         update_from_map(map, "channel_name", &mut self.channel_name);
@@ -82,6 +87,7 @@ impl Channel {
         self.clients.sort()
     }
 
+    /// Remove all Server Query Clients from the Channel.
     pub fn remove_sq_clients(&mut self) {
         let new_clients = self.clients
             .iter()
@@ -91,6 +97,7 @@ impl Channel {
         self.clients = new_clients;
     }
 
+    /// Creates a JSON String from self.
     pub fn as_json(&self) -> String {
         json::encode(self).unwrap_or(String::new())
     }

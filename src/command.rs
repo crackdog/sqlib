@@ -1,5 +1,6 @@
 // mod command
 
+/// A trait for a Command, that can be send to a server.
 pub trait Command {
     fn string(&self) -> String;
 }

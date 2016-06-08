@@ -8,7 +8,7 @@ use std::str::FromStr;
 use map::*;
 use escaping::*;
 
-/// Client contains information about a TeamSpeak 3 client.
+/// Client contains a TeamSpeak 3 client.
 /// # Example
 /// ```
 /// use sqlib;
@@ -75,18 +75,21 @@ impl Client {
         self.client_nickname = unescape(&self.client_nickname);
     }
 
+    /// creates a Client from a given map.
     pub fn from_map(map: &StringMap) -> Client {
         let mut client = Client::default();
         client.mut_from_map(map);
         client
     }
 
+    /// updates a given Client from a given map.
     pub fn update_from_map(client: Client, map: &StringMap) -> Client {
         let mut client = client.clone();
         client.mut_from_map(map);
         client
     }
 
+    /// mutates self from a given map.
     pub fn mut_from_map(&mut self, map: &StringMap) {
         update_from_map(map, "clid", &mut self.clid);
         update_from_map(map, "cid", &mut self.cid);
@@ -114,6 +117,7 @@ impl Client {
         }
     }
 
+    /// creates a JSON String from self.
     pub fn as_json(&self) -> String {
         json::encode(self).unwrap_or(String::new())
     }
