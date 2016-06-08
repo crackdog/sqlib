@@ -70,11 +70,14 @@ impl Handler for AMCL {
 }
 
 fn main() {
-    let mut args = env::args();
-    let _ = args.next().unwrap(); // program name
-    let login_name = args.next().unwrap();
-    let password = args.next().unwrap();
-    let nickname = args.next().unwrap();
+    let args: Vec<_> = env::args().collect();
+
+    let login_name = args[1].clone();
+    let password = args[2].clone();
+    let nickname = match args.get(3) {
+        Some(s) => s.clone(),
+        None => "ts3-online".to_string(),
+    };
     let server_id = 1; // args.next().unwrap().parse().unwrap();
 
     let channels = Arc::new(Mutex::new(String::new()));
