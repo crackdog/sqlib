@@ -23,25 +23,28 @@ fn handle(channels: Arc<Mutex<String>>, req: Request, mut res: Response) {
             res.headers_mut().set(ContentLength(body.len() as u64));
             let mut res = res.start().unwrap();
             // res.write_all(body).unwrap();
-            let _ = write!(res, "{}", body);
+            let _ = write!(res, "{}\r\n", body);
 
             // println!("{:?}", req.headers);
         }
         _ => {
             println!("{:?}", req.method);
-            send_error(res);
+            send_error(res, StatusCode::MethodNotAllowed);
         }
     }
 }
 
-fn send_error(mut res: Response) {
-    let body = "Error: Internal Server Error";
+fn send_error(mut res: Response, code: StatusCode) {
+    let body = match code.canonical_reason() {
+        Some(reason) => format!("Error: {}", reason),
+        None => "An Error happened!".to_string(),
+    };
     res.headers_mut().set(ContentLength(body.len() as u64));
-    *res.status_mut() = StatusCode::InternalServerError;
+    *res.status_mut() = code;
 
     let mut res = res.start().unwrap();
 
-    let _ = write!(res, "{}", body);
+    let _ = write!(res, "{}\r\n", body);
 }
 
 fn get_channels_interval(mut conn: Connection,
