@@ -2,6 +2,12 @@
 name = "sqlib"
 version = "0.1.0"
 authors = ["Florian Kahllund <flo.kahllund@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/crackdog/ts3-online"
+description = """
+A small TS3 Server Query library and channellist server
+"""
 
 [dependencies]
 rustc-serialize = "*"
