@@ -8,16 +8,16 @@ use hyper::header::ContentLength;
 use std::io::Write;
 use std::time;
 use std::thread;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 use std::env;
 use sqlib::prelude::*;
 
-fn handle(channels: Arc<Mutex<String>>, req: Request, mut res: Response) {
+fn handle(channels: Arc<RwLock<String>>, req: Request, mut res: Response) {
     match req.method {
         Method::Get => {
             let body: String;
             {
-                let channels = channels.lock().unwrap();
+                let channels = channels.read().unwrap();
                 body = channels.clone();
             }
             res.headers_mut().set(ContentLength(body.len() as u64));
@@ -48,14 +48,14 @@ fn send_error(mut res: Response, code: StatusCode) {
 }
 
 fn get_channels_interval(mut conn: Connection,
-                         channels: Arc<Mutex<String>>,
+                         channels: Arc<RwLock<String>>,
                          secs: u64)
                          -> Result<()> {
     loop {
         let new_channellist = try!(conn.channellist_with_clients());
         let channellist_str = new_channellist.as_json();
         {
-            let mut cls = try!(channels.lock());
+            let mut cls = try!(channels.write());
             *cls = channellist_str;
         }
         thread::sleep(time::Duration::from_secs(secs));
@@ -63,7 +63,7 @@ fn get_channels_interval(mut conn: Connection,
 }
 
 struct AMCL {
-    cl: Arc<Mutex<String>>,
+    cl: Arc<RwLock<String>>,
 }
 
 impl Handler for AMCL {
@@ -83,7 +83,7 @@ fn main() {
     };
     let server_id = 1; // args.next().unwrap().parse().unwrap();
 
-    let channels = Arc::new(Mutex::new(String::new()));
+    let channels = Arc::new(RwLock::new(String::new()));
     let handler_channels = AMCL { cl: channels.clone() };
 
     let mut conn = Connection::new("127.0.0.1:10011").unwrap();
