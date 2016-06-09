@@ -10,7 +10,7 @@ use std::time;
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::env;
-use sqlib::*;
+use sqlib::prelude::*;
 
 fn handle(channels: Arc<Mutex<String>>, req: Request, mut res: Response) {
     match req.method {
@@ -50,7 +50,7 @@ fn send_error(mut res: Response, code: StatusCode) {
 fn get_channels_interval(mut conn: Connection,
                          channels: Arc<Mutex<String>>,
                          secs: u64)
-                         -> sqlib::Result<()> {
+                         -> Result<()> {
     loop {
         let new_channellist = try!(conn.channellist_with_clients());
         let channellist_str = new_channellist.as_json();
