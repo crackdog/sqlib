@@ -10,6 +10,7 @@ use client::ClientList;
 use channel::ChannelList;
 use command::Command;
 use map::*;
+use error;
 
 #[derive(Debug)]
 pub struct Connection {
@@ -18,7 +19,7 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(addr: &str) -> super::Result<Connection> {
+    pub fn new(addr: &str) -> error::Result<Connection> {
         let addr = addr.to_string();
         let a = try!(addr.parse());
         let c = try!(net::TcpStream::connect(a));
@@ -35,7 +36,7 @@ impl Connection {
         Ok(connection)
     }
 
-    fn read_line<'a>(&mut self, buf: &'a mut String) -> super::Result<&'a str> {
+    fn read_line<'a>(&mut self, buf: &'a mut String) -> error::Result<&'a str> {
         let _ = try!(self.conn.read_line(buf));
         Ok(buf.trim_left_matches(char::is_control))
     }
@@ -44,7 +45,7 @@ impl Connection {
         self.conn.get_mut()
     }
 
-    pub fn send_command<C>(&mut self, command: C) -> super::Result<String>
+    pub fn send_command<C>(&mut self, command: C) -> error::Result<String>
         where C: Command
     {
         let command = command.string();
@@ -70,14 +71,14 @@ impl Connection {
         Ok(result)
     }
 
-    pub fn send_command_to_map<C>(&mut self, command: C) -> super::Result<StringMap>
+    pub fn send_command_to_map<C>(&mut self, command: C) -> error::Result<StringMap>
         where C: Command
     {
         let result = try!(self.send_command(command));
         Ok(to_map(&result))
     }
 
-    pub fn send_command_vec<C>(&mut self, commands: C) -> super::Result<Vec<String>>
+    pub fn send_command_vec<C>(&mut self, commands: C) -> error::Result<Vec<String>>
         where C: IntoIterator,
               C::Item: Command
     {
@@ -89,21 +90,21 @@ impl Connection {
         Ok(results)
     }
 
-    pub fn quit(&mut self) -> super::Result<()> {
+    pub fn quit(&mut self) -> error::Result<()> {
         try!(self.send_command("quit"));
         try!(self.conn.get_ref().shutdown(net::Shutdown::Both));
         Ok(())
     }
 
-    pub fn use_server_id(&mut self, id: u64) -> super::Result<()> {
+    pub fn use_server_id(&mut self, id: u64) -> error::Result<()> {
         self.send_command(format!("use {}", id)).map(|_| ())
     }
 
-    pub fn login(&mut self, name: &str, pw: &str) -> super::Result<()> {
+    pub fn login(&mut self, name: &str, pw: &str) -> error::Result<()> {
         self.send_command(format!("login {} {}", name, pw)).map(|_| ())
     }
 
-    pub fn change_nickname(&mut self, nickname: &str) -> super::Result<()> {
+    pub fn change_nickname(&mut self, nickname: &str) -> error::Result<()> {
         let map = try!(self.send_command_to_map("whoami"));
         let id = try!(map.get("client_id").ok_or("error at collecting client_id"));
         let cmd = format!("clientupdate clid={} client_nickname={}", id, nickname);
@@ -111,13 +112,13 @@ impl Connection {
         Ok(())
     }
 
-    pub fn clientlist(&mut self) -> super::Result<ClientList> {
+    pub fn clientlist(&mut self) -> error::Result<ClientList> {
         let s = try!(self.send_command("clientlist"));
         let cl = try!(s.parse());
         Ok(cl)
     }
 
-    pub fn clientlist_with_info(&mut self) -> super::Result<ClientList> {
+    pub fn clientlist_with_info(&mut self) -> error::Result<ClientList> {
         let mut clients = try!(self.clientlist());
         for client in clients.get_mut().iter_mut() {
             let command = format!("clientinfo clid={}", client.clid);
@@ -128,13 +129,13 @@ impl Connection {
         Ok(clients)
     }
 
-    pub fn channellist(&mut self) -> super::Result<ChannelList> {
+    pub fn channellist(&mut self) -> error::Result<ChannelList> {
         let s = try!(self.send_command("channellist"));
         let cl = try!(s.parse());
         Ok(cl)
     }
 
-    pub fn channellist_with_clients(&mut self) -> super::Result<ChannelList> {
+    pub fn channellist_with_clients(&mut self) -> error::Result<ChannelList> {
         let clients = try!(self.clientlist_with_info());
         let mut channels = try!(self.channellist());
         channels.merge_clients(&clients);

@@ -7,13 +7,14 @@ use std::ops::Deref;
 use std::str::FromStr;
 use map::*;
 use escaping::*;
+use error;
 
 /// Client contains a TeamSpeak 3 client.
 /// # Example
 /// ```
-/// use sqlib;
+/// use sqlib::client;
 ///
-/// let client = sqlib::Client {
+/// let client = client::Client {
 ///     clid: 1,
 ///     cid: 1,
 ///     client_database_id: 1,
@@ -124,8 +125,8 @@ impl Client {
 }
 
 impl FromStr for Client {
-    type Err = super::Error;
-    fn from_str(s: &str) -> super::Result<Self> {
+    type Err = error::Error;
+    fn from_str(s: &str) -> error::Result<Self> {
         let map = to_map(s);
         Ok(Client::from_map(&map))
     }
@@ -199,8 +200,8 @@ impl ClientList {
 }
 
 impl FromStr for ClientList {
-    type Err = super::Error;
-    fn from_str(s: &str) -> super::Result<Self> {
+    type Err = error::Error;
+    fn from_str(s: &str) -> error::Result<Self> {
         let maps = s.split('|').map(to_map).collect();
         Ok(ClientList::from_maps(&maps))
     }

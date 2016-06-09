@@ -5,11 +5,14 @@ use std::io;
 use std::convert::From;
 use std::net::AddrParseError;
 use std::sync::PoisonError;
+use std::result;
 use escaping::unescape;
+
+pub type Result<T> = result::Result<T, Error>;
 
 /// # Example
 /// ```
-/// use sqlib::SQError;
+/// use sqlib::error::SQError;
 ///
 /// let line = "error id=0 msg=ok".to_string();
 ///
@@ -46,7 +49,7 @@ impl SQError {
         SQError::new(0, "ok".to_string())
     }
 
-    pub fn parse_is_ok(s: &str) -> super::Result<bool> {
+    pub fn parse_is_ok(s: &str) -> Result<bool> {
         let err = match SQError::parse(s) {
             None => {
                 return Ok(false);

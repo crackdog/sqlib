@@ -8,13 +8,14 @@ use std::ops::Deref;
 use std::str::FromStr;
 use map::*;
 use escaping::*;
+use error;
 
 /// Channel contains a TeamSpeak 3 channel.
 /// # Example
 /// ```
-/// use sqlib;
+/// use sqlib::channel;
 ///
-/// let channel = sqlib::Channel::new(0, "test".to_string());
+/// let channel = sqlib::channel::Channel::new(0, "test".to_string());
 ///
 /// assert!(channel.is_empty());
 /// assert_eq!("test".to_string(), format!("{}", channel));
@@ -104,8 +105,8 @@ impl Channel {
 }
 
 impl FromStr for Channel {
-    type Err = super::Error;
-    fn from_str(s: &str) -> super::Result<Self> {
+    type Err = error::Error;
+    fn from_str(s: &str) -> error::Result<Self> {
         let map = to_map(s);
         Ok(Channel::from_map(&map))
     }
@@ -205,8 +206,8 @@ impl Deref for ChannelList {
 }
 
 impl FromStr for ChannelList {
-    type Err = super::Error;
-    fn from_str(s: &str) -> super::Result<Self> {
+    type Err = error::Error;
+    fn from_str(s: &str) -> error::Result<Self> {
         let maps = s.split('|').map(to_map).collect();
         Ok(ChannelList::from_maps(&maps))
     }
