@@ -120,7 +120,7 @@ impl Connection {
 
     pub fn clientlist_with_info(&mut self) -> error::Result<ClientList> {
         let mut clients = try!(self.clientlist());
-        for client in clients.get_mut().iter_mut() {
+        for client in clients.as_mut().iter_mut() {
             let command = format!("clientinfo clid={}", client.clid);
             let str = try!(self.send_command(command));
             let map = to_map(&str);

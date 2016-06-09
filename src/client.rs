@@ -1,4 +1,6 @@
-// mod client
+//! The client module contains the Client and ClientList struct.
+//!
+//! They are representations of a TS3 client and clientlist.
 
 use rustc_serialize::json;
 use std::fmt;
@@ -161,30 +163,46 @@ impl Ord for Client {
     }
 }
 
+/// ClientList contains a list of Clients.
+///
+/// # Example
+/// ```
+/// use sqlib::client::{Client, ClientList};
+///
+/// let client1 = Client::new(1, "test1".to_string());
+/// let client2 = Client::new(2, "test2".to_string());
+///
+/// let clients = vec![client1, client2];
+/// let clientlist = ClientList::from(clients.clone());
+///
+/// assert_eq!(&clients, clientlist.as_ref());
+///
+/// let clients2: Vec<_> = clientlist.into();
+/// assert_eq!(clients, clients2);
+/// ```
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct ClientList(Vec<Client>);
 
 impl ClientList {
-    pub fn vec(&self) -> &Vec<Client> {
-        let &ClientList(ref v) = self;
-        v
+    /// creates an empty ClientList
+    pub fn new() -> ClientList {
+        ClientList(Vec::new())
     }
 
-    pub fn get_mut(&mut self) -> &mut Vec<Client> {
-        let &mut ClientList(ref mut v) = self;
-        v
+    /// converts a ClientList into a vector of Client's
+    pub fn into_inner(self) -> Vec<Client> {
+        let ClientList(clients) = self;
+        clients
     }
 
-    pub fn get_vec(self) -> Vec<Client> {
-        let ClientList(v) = self;
-        v
-    }
-
+    /// filter_clients borrows a ClientList and creates a new one only with real
+    /// clients.
     pub fn filter_clients(&self) -> ClientList {
         let new_vec = self.iter().map(Clone::clone).filter(|c| c.is_client()).collect();
         ClientList(new_vec)
     }
 
+    /// creates a ClientList from a Vec of StringMaps
     pub fn from_maps(maps: &Vec<StringMap>) -> ClientList {
         let mut vec = Vec::new();
         for map in maps.iter() {
@@ -194,8 +212,9 @@ impl ClientList {
         ClientList(vec)
     }
 
+    /// creats a JSON String from a ClientList
     pub fn as_json(&self) -> String {
-        json::encode(self.vec()).unwrap_or(String::new())
+        json::encode(self).unwrap_or(String::new())
     }
 }
 
@@ -207,17 +226,43 @@ impl FromStr for ClientList {
     }
 }
 
+impl From<Vec<Client>> for ClientList {
+    fn from(clients: Vec<Client>) -> ClientList {
+        ClientList(clients)
+    }
+}
+
+impl From<ClientList> for Vec<Client> {
+    fn from(clients: ClientList) -> Self {
+        clients.into_inner()
+    }
+}
+
 impl Deref for ClientList {
     type Target = Vec<Client>;
     fn deref(&self) -> &Vec<Client> {
-        self.vec()
+        self.as_ref()
+    }
+}
+
+impl AsRef<Vec<Client>> for ClientList {
+    fn as_ref(&self) -> &Vec<Client> {
+        let &ClientList(ref clients) = self;
+        clients
+    }
+}
+
+impl AsMut<Vec<Client>> for ClientList {
+    fn as_mut(&mut self) -> &mut Vec<Client> {
+        let &mut ClientList(ref mut clients) = self;
+        clients
     }
 }
 
 impl fmt::Display for ClientList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "[ "));
-        let mut cls = self.vec().iter();
+        let mut cls = self.iter();
         if cls.len() > 0 {
             try!(write!(f, "{}", cls.next().unwrap()));
         }
