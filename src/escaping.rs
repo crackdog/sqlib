@@ -1,4 +1,18 @@
-// mod escaping
+//! escaping provides functions for the Server Query escaping.
+//!
+//! # Example
+//! ```
+//! use sqlib::escaping::{escape, unescape};
+//!
+//! let unescaped = "hello world/|\\".to_string();
+//! let escaped = "hello\\sworld\\/\\p\\\\".to_string();
+//!
+//! let escaped_test = escape(&unescaped);
+//! let unescaped_test = unescape(&escaped);
+//!
+//! assert_eq!(escaped_test, escaped);
+//! assert_eq!(unescaped_test, unescaped);
+//! ```
 
 const ESCAPE_CHARS: [(char, &'static str); 11] = [('\\', "\\\\"),
                                                   (' ', "\\s"),
@@ -13,6 +27,7 @@ const ESCAPE_CHARS: [(char, &'static str); 11] = [('\\', "\\\\"),
                                                   (13 as char, "\\r")];
 
 /// escapes all chars described in the server query manual
+///
 /// # Example
 /// ```
 /// use sqlib::escaping::escape;
@@ -33,6 +48,7 @@ pub fn escape(s: &str) -> String {
 }
 
 /// unescapes all chars described in the server query manual
+///
 /// # Example
 /// ```
 /// use sqlib::escaping::unescape;
