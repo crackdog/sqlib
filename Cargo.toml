@@ -11,4 +11,3 @@ A small TS3 Server Query library and channellist server
 
 [dependencies]
 rustc-serialize = "*"
-hyper = "*"
