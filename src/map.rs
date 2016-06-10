@@ -1,10 +1,35 @@
-// mod map
+//! map provides functions around StringMap (HashMap<String, String>).
+//!
+//! # Example
+//! ```
+//! use sqlib::map::{to_map, update_from_map};
+//!
+//! let map = to_map("key1=2");
+//! let mut integer = 1i32;
+//!
+//! update_from_map(&map, "key1", &mut integer);
+//!
+//! assert_eq!(integer, 2);
+//! ```
 
 use std::collections::HashMap;
 use std::str::FromStr;
 
+/// A small newtype for a HashMap of Strings.
 pub type StringMap = HashMap<String, String>;
 
+/// creates a new StringMap from a &str.
+///
+/// # Example
+/// ```
+/// use sqlib::map::to_map;
+///
+/// let string = " key1=value1 key2=value2 ";
+/// let map = to_map(string);
+///
+/// assert_eq!(map.get("key1").unwrap(), "value1");
+/// assert_eq!(map.get("key2").unwrap(), "value2");
+/// ```
 pub fn to_map(string: &str) -> StringMap {
     let pair_seperator = char::is_whitespace;
     let key_value_seperator = '=';
@@ -24,6 +49,20 @@ pub fn to_map(string: &str) -> StringMap {
     map
 }
 
+/// This function gets the value to the key from the map, then parses it and mutates the given
+/// pointer.
+///
+/// # Example
+/// ```
+/// use sqlib::map::{to_map, update_from_map};
+///
+/// let map = to_map("key1=2");
+/// let mut integer = 1i32;
+///
+/// update_from_map(&map, "key1", &mut integer);
+///
+/// assert_eq!(integer, 2);
+/// ```
 pub fn update_from_map<T>(map: &StringMap, key: &str, value: &mut T)
     where T: FromStr
 {
