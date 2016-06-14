@@ -1,4 +1,6 @@
-// mod channel
+//! The channel module contains the Channel and ChannelList structs.
+//!
+//! The are representations of a TS3 channel and channellist.
 
 use rustc_serialize::json;
 use client::{Client, ClientList};
@@ -22,8 +24,11 @@ use error;
 /// ```
 #[derive(Debug, Clone, RustcDecodable, RustcEncodable)]
 pub struct Channel {
+    /// channel id
     pub cid: i64,
+    /// channel name
     pub channel_name: String,
+    /// A vector of clients, who are in the channel.
     pub clients: Vec<Client>,
 }
 
@@ -144,6 +149,23 @@ impl Ord for Channel {
     }
 }
 
+/// ChannelList contains a list of Channels.
+///
+/// # Example
+/// ```
+/// use sqlib::channel::{Channel, ChannelList};
+///
+/// let channel1 = Channel::new(1, "test1".to_string());
+/// let channel2 = Channel::new(2, "test2".to_string());
+///
+/// let channels = vec![channel1, channel2];
+/// let channellist = ChannelList::from(channels.clone());
+///
+/// assert_eq!(&channels, channellist.as_ref());
+///
+/// let channels2: Vec<_> = channellist.into();
+/// assert_eq!(channels, channels2);
+/// ```
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
 pub struct ChannelList(Vec<Channel>);
 
@@ -154,11 +176,13 @@ impl Default for ChannelList {
 }
 
 impl ChannelList {
+    /// Converts a ChannelList into a vector of Channel's.
     pub fn into_inner(self) -> Vec<Channel> {
         let ChannelList(channel) = self;
         channel
     }
 
+    /// creates a ChannelList from a Vec of StringMaps
     pub fn from_maps(maps: &Vec<StringMap>) -> ChannelList {
         let mut vec = Vec::new();
         for map in maps.iter() {
@@ -183,6 +207,7 @@ impl ChannelList {
         }
     }
 
+    /// creates a JSON String from a ChannelList
     pub fn as_json(&self) -> String {
         json::encode(self.as_ref()).unwrap_or(String::new())
     }
@@ -214,5 +239,17 @@ impl FromStr for ChannelList {
     fn from_str(s: &str) -> error::Result<Self> {
         let maps = s.split('|').map(to_map).collect();
         Ok(ChannelList::from_maps(&maps))
+    }
+}
+
+impl From<Vec<Channel>> for ChannelList {
+    fn from(channels: Vec<Channel>) -> Self {
+        ChannelList(channels)
+    }
+}
+
+impl From<ChannelList> for Vec<Channel> {
+    fn from(channels: ChannelList) -> Self {
+        channels.into_inner()
     }
 }
