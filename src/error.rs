@@ -163,6 +163,29 @@ pub enum Error {
     Other(String),
 }
 
+impl Error {
+    pub fn is_io(&self) -> bool {
+        match self {
+            &Error::Io(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_sq(&self) -> bool {
+        match self {
+            &Error::SQ(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_other(&self) -> bool {
+        match self {
+            &Error::Other(_) => true,
+            _ => false,
+        }
+    }
+}
+
 impl error::Error for Error {
     fn description(&self) -> &str {
         match self {
