@@ -8,8 +8,11 @@ use std::sync::PoisonError;
 use std::result;
 use escaping::unescape;
 
+/// The standart result type of sqlib.
 pub type Result<T> = result::Result<T, Error>;
 
+/// A SQError contains a TS3 Server Query error.
+///
 /// # Example
 /// ```
 /// use sqlib::error::SQError;
@@ -45,10 +48,37 @@ impl SQError {
         }
     }
 
+    /// Creates an OK error.
     pub fn ok() -> SQError {
         SQError::new(0, "ok".to_string())
     }
 
+    /// This function tries to parse a string into an Error.
+    ///
+    /// # Return values
+    ///
+    /// - If it fails to parse it returns Ok(false).
+    /// - If it parses the string as an OK error it returns Ok(true).
+    /// - If it parses the string as another error it returns Err(error).
+    ///
+    /// # Example
+    /// ```
+    /// use sqlib::error::{Error, SQError};
+    ///
+    /// let ok_str = "error id=0 msg=ok";
+    /// let no_err_str = "this is no error";
+    /// let err_str = "error id=1 msg=test";
+    ///
+    /// let test_err = SQError::new(1, "test".to_string());
+    /// let to_test_error = match SQError::parse_is_ok(err_str).unwrap_err() {
+    ///     Error::SQ(e) => e,
+    ///     _ => SQError::ok(),
+    /// };
+    ///
+    /// assert_eq!(SQError::parse_is_ok(ok_str).unwrap(), true);
+    /// assert_eq!(SQError::parse_is_ok(no_err_str).unwrap(), false);
+    /// assert_eq!(to_test_error, test_err);
+    /// ```
     pub fn parse_is_ok(s: &str) -> Result<bool> {
         let err = match SQError::parse(s) {
             None => {
@@ -121,7 +151,7 @@ impl error::Error for SQError {
     }
 }
 
-/// SQError is a custom Error type for the sqlib.
+/// Error is a custom Error type for the sqlib.
 #[derive(Debug)]
 pub enum Error {
     /// wraps io::Error
