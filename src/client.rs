@@ -1,4 +1,4 @@
-//! The client module contains the Client and ClientList struct.
+//! The client module contains the Client and ClientList structs.
 //!
 //! They are representations of a TS3 client and clientlist.
 
