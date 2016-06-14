@@ -154,19 +154,9 @@ impl Default for ChannelList {
 }
 
 impl ChannelList {
-    pub fn vec(&self) -> &Vec<Channel> {
-        let &ChannelList(ref v) = self;
-        v
-    }
-
-    pub fn get_mut(&mut self) -> &mut Vec<Channel> {
-        let &mut ChannelList(ref mut v) = self;
-        v
-    }
-
-    pub fn get_vec(self) -> Vec<Channel> {
-        let ChannelList(v) = self;
-        v
+    pub fn into_inner(self) -> Vec<Channel> {
+        let ChannelList(channel) = self;
+        channel
     }
 
     pub fn from_maps(maps: &Vec<StringMap>) -> ChannelList {
@@ -180,7 +170,7 @@ impl ChannelList {
 
     pub fn insert_client(&mut self, client: &Client) {
         let cid = client.cid;
-        for channel in self.get_mut().iter_mut() {
+        for channel in self.as_mut().iter_mut() {
             if channel.cid == cid {
                 channel.add_client(client.clone());
             }
@@ -194,14 +184,28 @@ impl ChannelList {
     }
 
     pub fn as_json(&self) -> String {
-        json::encode(self.vec()).unwrap_or(String::new())
+        json::encode(self.as_ref()).unwrap_or(String::new())
     }
 }
 
 impl Deref for ChannelList {
     type Target = Vec<Channel>;
     fn deref(&self) -> &Vec<Channel> {
-        self.vec()
+        self.as_ref()
+    }
+}
+
+impl AsRef<Vec<Channel>> for ChannelList {
+    fn as_ref(&self) -> &Vec<Channel> {
+        let &ChannelList(ref channel) = self;
+        channel
+    }
+}
+
+impl AsMut<Vec<Channel>> for ChannelList {
+    fn as_mut(&mut self) -> &mut Vec<Channel> {
+        let &mut ChannelList(ref mut channel) = self;
+        channel
     }
 }
 
