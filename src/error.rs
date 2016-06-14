@@ -1,4 +1,5 @@
-// mod error
+//! error provides newtypes and Error's for sqlib.
+
 use std::error::{self, Error as Err};
 use std::fmt::{self, Display};
 use std::io;
