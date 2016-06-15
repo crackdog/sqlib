@@ -14,17 +14,17 @@
 //! assert_eq!(unescaped_test, unescaped);
 //! ```
 
-const ESCAPE_CHARS: [(char, &'static str); 11] = [('\\', "\\\\"),
-                                                  (' ', "\\s"),
-                                                  ('/', "\\/"),
-                                                  ('|', "\\p"),
-                                                  (7 as char, "\\a"),
-                                                  (8 as char, "\\b"),
-                                                  (9 as char, "\\t"),
-                                                  (10 as char, "\\n"),
-                                                  (11 as char, "\\v"),
-                                                  (12 as char, "\\f"),
-                                                  (13 as char, "\\r")];
+const ESCAPE_CHARS: [(char, &'static str); 11] = [('\\', r"\\"),
+                                                  (' ', r"\s"),
+                                                  ('/', r"\/"),
+                                                  ('|', r"\p"),
+                                                  (7 as char, r"\a"),
+                                                  (8 as char, r"\b"),
+                                                  (9 as char, r"\t"),
+                                                  (10 as char, r"\n"),
+                                                  (11 as char, r"\v"),
+                                                  (12 as char, r"\f"),
+                                                  (13 as char, r"\r")];
 
 /// escapes all chars described in the server query manual
 ///
