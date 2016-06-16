@@ -118,6 +118,9 @@ impl Connection {
         Ok(cl)
     }
 
+    /// # common bugs
+    /// If a client disconnects between the getting of the clientlist and the getting of the client
+    /// information, then there will be an error 512, because the client id is invalid.
     pub fn clientlist_with_info(&mut self) -> error::Result<ClientList> {
         let mut clients = try!(self.clientlist());
         for client in clients.as_mut().iter_mut() {
@@ -135,6 +138,9 @@ impl Connection {
         Ok(cl)
     }
 
+    /// # common bugs
+    /// If a client disconnects between the getting of the clientlist and the getting of the client
+    /// information, then there will be an error 512, because the client id is invalid.
     pub fn channellist_with_clients(&mut self) -> error::Result<ChannelList> {
         let clients = try!(self.clientlist_with_info());
         let mut channels = try!(self.channellist());
