@@ -118,7 +118,7 @@ impl Connection {
         Ok(cl)
     }
 
-    /// # common bugs
+    /// # common errors
     /// If a client disconnects between the getting of the clientlist and the getting of the client
     /// information, then there will be an error 512, because the client id is invalid.
     pub fn clientlist_with_info(&mut self) -> error::Result<ClientList> {
@@ -138,7 +138,7 @@ impl Connection {
         Ok(cl)
     }
 
-    /// # common bugs
+    /// # common errors
     /// If a client disconnects between the getting of the clientlist and the getting of the client
     /// information, then there will be an error 512, because the client id is invalid.
     pub fn channellist_with_clients(&mut self) -> error::Result<ChannelList> {
