@@ -1,4 +1,5 @@
-// mod connection
+//! The connection module contains the Connection struct, that provides an interface for a Server
+//! Query connection.
 
 use std::fmt;
 use std::net;
@@ -12,6 +13,7 @@ use command::Command;
 use map::*;
 use error;
 
+/// Connection provides an interface for a Server Query connection.
 #[derive(Debug)]
 pub struct Connection {
     addr: net::SocketAddrV4,
@@ -19,6 +21,7 @@ pub struct Connection {
 }
 
 impl Connection {
+    /// creates a new Connection from an adress given as a string reference.
     pub fn new(addr: &str) -> error::Result<Connection> {
         let addr = addr.to_string();
         let a = try!(addr.parse());
@@ -45,6 +48,8 @@ impl Connection {
         self.conn.get_mut()
     }
 
+    /// sends a given command to the Server Query server and returns the answer as a String, or
+    /// the error.
     pub fn send_command<C>(&mut self, command: C) -> error::Result<String>
         where C: Command
     {
@@ -90,20 +95,24 @@ impl Connection {
         Ok(results)
     }
 
+    /// sends the quit command to the server and shuts the Connection down.
     pub fn quit(&mut self) -> error::Result<()> {
         try!(self.send_command("quit"));
         try!(self.conn.get_ref().shutdown(net::Shutdown::Both));
         Ok(())
     }
 
+    /// sends the use command with the given id to the server.
     pub fn use_server_id(&mut self, id: u64) -> error::Result<()> {
         self.send_command(format!("use {}", id)).map(|_| ())
     }
 
+    /// sends the login command with the name and password to the server.
     pub fn login(&mut self, name: &str, pw: &str) -> error::Result<()> {
         self.send_command(format!("login {} {}", name, pw)).map(|_| ())
     }
 
+    /// tries to change the nickname of the Server Query client.
     pub fn change_nickname(&mut self, nickname: &str) -> error::Result<()> {
         let map = try!(self.send_command_to_map("whoami"));
         let id = try!(map.get("client_id").ok_or("error at collecting client_id"));
@@ -112,6 +121,7 @@ impl Connection {
         Ok(())
     }
 
+    /// sends the clientlist command to the server and parses the result.
     pub fn clientlist(&mut self) -> error::Result<ClientList> {
         let s = try!(self.send_command("clientlist"));
         let cl = try!(s.parse());
@@ -132,6 +142,7 @@ impl Connection {
         Ok(clients)
     }
 
+    /// sends the channellist command to the server and parses the result.
     pub fn channellist(&mut self) -> error::Result<ChannelList> {
         let s = try!(self.send_command("channellist"));
         let cl = try!(s.parse());
