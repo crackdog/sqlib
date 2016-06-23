@@ -1,6 +1,6 @@
-// mod command
+//! command contains a trait for a Command, that can be send to a Server Query server.
 
-/// A trait for a Command, that can be send to a server.
+/// A trait for a Command, that can be send to a Server Query server.
 pub trait Command {
     fn string(&self) -> String;
 }
