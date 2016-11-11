@@ -261,13 +261,13 @@ impl AsMut<Vec<Client>> for ClientList {
 
 impl fmt::Display for ClientList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "[ "));
+        write!(f, "[ ")?;
         let mut cls = self.iter();
         if cls.len() > 0 {
-            try!(write!(f, "{}", cls.next().unwrap()));
+            write!(f, "{}", cls.next().unwrap())?;
         }
         for client in cls {
-            try!(write!(f, ", {}", client));
+            write!(f, ", {}", client)?;
         }
         write!(f, " ]")
     }

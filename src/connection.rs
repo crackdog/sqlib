@@ -24,23 +24,23 @@ impl Connection {
     /// creates a new Connection from an adress given as a string reference.
     pub fn new(addr: &str) -> error::Result<Connection> {
         let addr = addr.to_string();
-        let a = try!(addr.parse());
-        let c = try!(net::TcpStream::connect(a));
+        let a = addr.parse()?;
+        let c = net::TcpStream::connect(a)?;
         let mut connection = Connection {
             addr: a,
             conn: BufReader::new(c),
         };
         let mut tmp = String::new();
-        try!(connection.conn.read_line(&mut tmp));
+        connection.conn.read_line(&mut tmp)?;
         if tmp.trim() != "TS3" {
             return Err(From::from("the given server is not a TS3 server"));
         }
-        try!(connection.read_line(&mut tmp));
+        connection.read_line(&mut tmp)?;
         Ok(connection)
     }
 
     fn read_line<'a>(&mut self, buf: &'a mut String) -> error::Result<&'a str> {
-        let _ = try!(self.conn.read_line(buf));
+        let _ = self.conn.read_line(buf)?;
         Ok(buf.trim_left_matches(char::is_control))
     }
 
@@ -58,15 +58,15 @@ impl Connection {
             return Err(Error::from("no command"));
         }
 
-        try!(writeln!(self.get_stream_mut(), "{}", command));
+        writeln!(self.get_stream_mut(), "{}", command)?;
 
-        try!(self.get_stream_mut().flush());
+        self.get_stream_mut().flush()?;
 
         let mut result = String::new();
         loop {
             let mut line = String::new();
-            let line = try!(self.read_line(&mut line));
-            let ok = try!(SQError::parse_is_ok(line));
+            let line = self.read_line(&mut line)?;
+            let ok = SQError::parse_is_ok(line)?;
             if ok {
                 break;
             }
@@ -79,7 +79,7 @@ impl Connection {
     pub fn send_command_to_map<C>(&mut self, command: C) -> error::Result<StringMap>
         where C: Command
     {
-        let result = try!(self.send_command(command));
+        let result = self.send_command(command)?;
         Ok(to_map(&result))
     }
 
@@ -89,7 +89,7 @@ impl Connection {
     {
         let mut results = Vec::new();
         for cmd in commands {
-            let res = try!(self.send_command(cmd));
+            let res = self.send_command(cmd)?;
             results.push(res);
         }
         Ok(results)
@@ -97,8 +97,8 @@ impl Connection {
 
     /// sends the quit command to the server and shuts the Connection down.
     pub fn quit(&mut self) -> error::Result<()> {
-        try!(self.send_command("quit"));
-        try!(self.conn.get_ref().shutdown(net::Shutdown::Both));
+        self.send_command("quit")?;
+        self.conn.get_ref().shutdown(net::Shutdown::Both)?;
         Ok(())
     }
 
@@ -114,17 +114,17 @@ impl Connection {
 
     /// tries to change the nickname of the Server Query client.
     pub fn change_nickname(&mut self, nickname: &str) -> error::Result<()> {
-        let map = try!(self.send_command_to_map("whoami"));
-        let id = try!(map.get("client_id").ok_or("error at collecting client_id"));
+        let map = self.send_command_to_map("whoami")?;
+        let id = map.get("client_id").ok_or("error at collecting client_id")?;
         let cmd = format!("clientupdate clid={} client_nickname={}", id, nickname);
-        let _ = try!(self.send_command(cmd));
+        let _ = self.send_command(cmd)?;
         Ok(())
     }
 
     /// sends the clientlist command to the server and parses the result.
     pub fn clientlist(&mut self) -> error::Result<ClientList> {
-        let s = try!(self.send_command("clientlist"));
-        let cl = try!(s.parse());
+        let s = self.send_command("clientlist")?;
+        let cl = s.parse()?;
         Ok(cl)
     }
 
@@ -132,10 +132,10 @@ impl Connection {
     /// If a client disconnects between the getting of the clientlist and the getting of the client
     /// information, then there will be an error 512, because the client id is invalid.
     pub fn clientlist_with_info(&mut self) -> error::Result<ClientList> {
-        let mut clients = try!(self.clientlist());
+        let mut clients = self.clientlist()?;
         for client in clients.as_mut().iter_mut() {
             let command = format!("clientinfo clid={}", client.clid);
-            let str = try!(self.send_command(command));
+            let str = self.send_command(command)?;
             let map = to_map(&str);
             client.mut_from_map(&map);
         }
@@ -144,8 +144,8 @@ impl Connection {
 
     /// sends the channellist command to the server and parses the result.
     pub fn channellist(&mut self) -> error::Result<ChannelList> {
-        let s = try!(self.send_command("channellist"));
-        let cl = try!(s.parse());
+        let s = self.send_command("channellist")?;
+        let cl = s.parse()?;
         Ok(cl)
     }
 
@@ -153,8 +153,8 @@ impl Connection {
     /// If a client disconnects between the getting of the clientlist and the getting of the client
     /// information, then there will be an error 512, because the client id is invalid.
     pub fn channellist_with_clients(&mut self) -> error::Result<ChannelList> {
-        let clients = try!(self.clientlist_with_info());
-        let mut channels = try!(self.channellist());
+        let clients = self.clientlist_with_info()?;
+        let mut channels = self.channellist()?;
         channels.merge_clients(&clients);
         Ok(channels)
     }

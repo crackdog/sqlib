@@ -119,10 +119,10 @@ impl FromStr for Channel {
 
 impl fmt::Display for Channel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "{}", self.channel_name));
+        write!(f, "{}", self.channel_name)?;
         if !self.is_empty() {
             for client in self.clients.iter() {
-                try!(write!(f, "\n  {}", client));
+                write!(f, "\n  {}", client)?;
             }
         };
         Ok(())
