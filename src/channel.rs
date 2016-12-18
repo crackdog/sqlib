@@ -98,7 +98,7 @@ impl Channel {
         let new_clients = self.clients
             .iter()
             .filter(|c| c.is_client())
-            .map(|c| c.clone())
+            .cloned()
             .collect();
         self.clients = new_clients;
     }
@@ -121,7 +121,7 @@ impl fmt::Display for Channel {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.channel_name)?;
         if !self.is_empty() {
-            for client in self.clients.iter() {
+            for client in &self.clients {
                 write!(f, "\n  {}", client)?;
             }
         };

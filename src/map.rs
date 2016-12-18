@@ -68,11 +68,8 @@ pub fn update_from_map<T>(map: &StringMap, key: &str, value: &mut T)
 {
     if let Some(v) = map.get(key) {
         let r: Result<T, _> = v.parse();
-        match r {
-            Ok(v) => {
-                *value = v;
-            }
-            Err(_) => {}
+        if let Ok(v) = r {
+            *value = v;
         }
     }
 }

@@ -41,7 +41,7 @@ const ESCAPE_CHARS: [(char, &'static str); 11] = [('\\', r"\\"),
 /// ```
 pub fn escape(s: &str) -> String {
     let mut new_string = s.to_string();
-    for &(from, to) in ESCAPE_CHARS.iter() {
+    for &(from, to) in &ESCAPE_CHARS {
         new_string = new_string.replace(from, to);
     }
     new_string
@@ -62,7 +62,7 @@ pub fn escape(s: &str) -> String {
 /// ```
 pub fn unescape(s: &str) -> String {
     let mut new_string = s.to_string();
-    for &(to, from) in ESCAPE_CHARS.iter() {
+    for &(to, from) in &ESCAPE_CHARS {
         new_string = new_string.replace(from, &to.to_string());
     }
     new_string

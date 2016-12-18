@@ -108,7 +108,7 @@ impl Client {
     fn connection_connected_time_string(&self) -> String {
         let mut raw_seconds = self.connection_connected_time / 1000;
         let hours = raw_seconds / 3600;
-        raw_seconds = raw_seconds % 3600;
+        raw_seconds %= 3600;
         let minutes = raw_seconds / 60;
         let seconds = raw_seconds % 60;
         if hours > 0 {
@@ -180,13 +180,13 @@ impl Ord for Client {
 /// let clients2: Vec<_> = clientlist.into();
 /// assert_eq!(clients, clients2);
 /// ```
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, RustcDecodable, RustcEncodable)]
+#[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Default, RustcDecodable, RustcEncodable)]
 pub struct ClientList(Vec<Client>);
 
 impl ClientList {
     /// creates an empty ClientList
     pub fn new() -> ClientList {
-        ClientList(Vec::new())
+        ClientList::default()
     }
 
     /// converts a ClientList into a vector of Client's
@@ -198,7 +198,7 @@ impl ClientList {
     /// filter_clients borrows a ClientList and creates a new one only with real
     /// clients.
     pub fn filter_clients(&self) -> ClientList {
-        let new_vec = self.iter().map(Clone::clone).filter(|c| c.is_client()).collect();
+        let new_vec = self.iter().cloned().filter(|c| c.is_client()).collect();
         ClientList(new_vec)
     }
 

@@ -108,7 +108,7 @@ impl SQError {
         if parts[1] != "id" {
             return None;
         }
-        let id_result = parts[2].clone().parse::<u32>();
+        let id_result = parts[2].parse::<u32>();
         let id = match id_result {
             Err(_) => {
                 return None;
@@ -165,22 +165,22 @@ pub enum Error {
 
 impl Error {
     pub fn is_io(&self) -> bool {
-        match self {
-            &Error::Io(_) => true,
+        match *self {
+            Error::Io(_) => true,
             _ => false,
         }
     }
 
     pub fn is_sq(&self) -> bool {
-        match self {
-            &Error::SQ(_) => true,
+        match *self {
+            Error::SQ(_) => true,
             _ => false,
         }
     }
 
     pub fn is_other(&self) -> bool {
-        match self {
-            &Error::Other(_) => true,
+        match *self {
+            Error::Other(_) => true,
             _ => false,
         }
     }
@@ -188,10 +188,10 @@ impl Error {
 
 impl error::Error for Error {
     fn description(&self) -> &str {
-        match self {
-            &Error::Io(ref err) => err.description(),
-            &Error::SQ(ref err) => err.description(),
-            &Error::Other(ref s) => s,
+        match *self {
+            Error::Io(ref err) => err.description(),
+            Error::SQ(ref err) => err.description(),
+            Error::Other(ref s) => s,
         }
     }
 }
