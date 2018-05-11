@@ -1,17 +1,17 @@
 //! The connection module contains the Connection struct, that provides an interface for a Server
 //! Query connection.
 
+use channel::ChannelList;
+use client::ClientList;
+use command::Command;
+use error;
+use error::{Error, SQError};
+use map::*;
 use std::fmt;
-use std::net;
-use std::string::String;
 use std::io::BufReader;
 use std::io::prelude::*;
-use error::{Error, SQError};
-use client::ClientList;
-use channel::ChannelList;
-use command::Command;
-use map::*;
-use error;
+use std::net;
+use std::string::String;
 
 /// Connection provides an interface for a Server Query connection.
 #[derive(Debug)]
@@ -51,7 +51,8 @@ impl Connection {
     /// sends a given command to the Server Query server and returns the answer as a String, or
     /// the error.
     pub fn send_command<C>(&mut self, command: C) -> error::Result<String>
-        where C: Command
+    where
+        C: Command,
     {
         let command = command.string();
         if command.is_empty() {
@@ -77,15 +78,17 @@ impl Connection {
     }
 
     pub fn send_command_to_map<C>(&mut self, command: C) -> error::Result<StringMap>
-        where C: Command
+    where
+        C: Command,
     {
         let result = self.send_command(command)?;
         Ok(to_map(&result))
     }
 
     pub fn send_command_vec<C>(&mut self, commands: C) -> error::Result<Vec<String>>
-        where C: IntoIterator,
-              C::Item: Command
+    where
+        C: IntoIterator,
+        C::Item: Command,
     {
         let mut results = Vec::new();
         for cmd in commands {
@@ -109,7 +112,8 @@ impl Connection {
 
     /// sends the login command with the name and password to the server.
     pub fn login(&mut self, name: &str, pw: &str) -> error::Result<()> {
-        self.send_command(format!("login {} {}", name, pw)).map(|_| ())
+        self.send_command(format!("login {} {}", name, pw))
+            .map(|_| ())
     }
 
     /// tries to change the nickname of the Server Query client.

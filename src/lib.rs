@@ -1,12 +1,12 @@
 extern crate rustc_serialize;
 
-pub mod client;
 pub mod channel;
-pub mod connection;
+pub mod client;
 pub mod command;
+pub mod connection;
 pub mod error;
-pub mod map;
 pub mod escaping;
+pub mod map;
 pub mod prelude;
 
 // pub use client::{Client, ClientList};

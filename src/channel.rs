@@ -2,15 +2,15 @@
 //!
 //! The are representations of a TS3 channel and channellist.
 
-use rustc_serialize::json;
 use client::{Client, ClientList};
-use std::fmt;
+use error;
+use escaping::*;
+use map::*;
+use rustc_serialize::json;
 use std::cmp;
+use std::fmt;
 use std::ops::Deref;
 use std::str::FromStr;
-use map::*;
-use escaping::*;
-use error;
 
 /// Channel contains a TeamSpeak 3 channel.
 /// # Example

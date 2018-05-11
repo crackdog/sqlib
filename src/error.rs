@@ -1,13 +1,13 @@
 //! error provides newtypes and Error's for sqlib.
 
+use escaping::unescape;
+use std::convert::From;
 use std::error::{self, Error as Err};
 use std::fmt::{self, Display};
 use std::io;
-use std::convert::From;
 use std::net::AddrParseError;
-use std::sync::PoisonError;
 use std::result;
-use escaping::unescape;
+use std::sync::PoisonError;
 
 /// The standart result type of sqlib.
 pub type Result<T> = result::Result<T, Error>;
@@ -138,7 +138,6 @@ impl PartialEq for SQError {
 }
 
 impl Eq for SQError {}
-
 
 impl Display for SQError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

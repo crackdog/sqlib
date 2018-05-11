@@ -2,14 +2,14 @@
 //!
 //! They are representations of a TS3 client and clientlist.
 
+use error;
+use escaping::*;
+use map::*;
 use rustc_serialize::json;
-use std::fmt;
 use std::cmp;
+use std::fmt;
 use std::ops::Deref;
 use std::str::FromStr;
-use map::*;
-use escaping::*;
-use error;
 
 /// Client contains a TeamSpeak 3 client.
 /// # Example
@@ -99,9 +99,11 @@ impl Client {
         update_from_map(map, "client_database_id", &mut self.client_database_id);
         update_from_map(map, "client_nickname", &mut self.client_nickname);
         update_from_map(map, "client_type", &mut self.client_type);
-        update_from_map(map,
-                        "connection_connected_time",
-                        &mut self.connection_connected_time);
+        update_from_map(
+            map,
+            "connection_connected_time",
+            &mut self.connection_connected_time,
+        );
         self.unescape();
     }
 
@@ -136,10 +138,12 @@ impl FromStr for Client {
 
 impl fmt::Display for Client {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "{} ({})",
-               &self.client_nickname,
-               self.connection_connected_time_string())
+        write!(
+            f,
+            "{} ({})",
+            &self.client_nickname,
+            self.connection_connected_time_string()
+        )
     }
 }
 

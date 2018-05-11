@@ -64,7 +64,8 @@ pub fn to_map(string: &str) -> StringMap {
 /// assert_eq!(integer, 2);
 /// ```
 pub fn update_from_map<T>(map: &StringMap, key: &str, value: &mut T)
-    where T: FromStr
+where
+    T: FromStr,
 {
     if let Some(v) = map.get(key) {
         let r: Result<T, _> = v.parse();
