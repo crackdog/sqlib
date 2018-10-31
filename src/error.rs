@@ -43,8 +43,8 @@ impl SQError {
     pub fn new(id: u32, msg: String) -> SQError {
         let full_msg_str = format!("error id={} msg={}", id, &msg);
         SQError {
-            id: id,
-            msg: msg,
+            id,
+            msg,
             full_msg: full_msg_str,
         }
     }

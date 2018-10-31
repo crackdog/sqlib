@@ -86,7 +86,7 @@ impl Client {
     }
 
     /// updates a given Client from a given map.
-    pub fn update_from_map(client: Client, map: &StringMap) -> Client {
+    pub fn update_from_map(client: &Client, map: &StringMap) -> Client {
         let mut client = client.clone();
         client.mut_from_map(map);
         client
@@ -124,7 +124,7 @@ impl Client {
 
     /// creates a JSON String from self.
     pub fn as_json(&self) -> String {
-        json::encode(self).unwrap_or(String::new())
+        json::encode(self).unwrap_or_default()
     }
 }
 
@@ -207,7 +207,7 @@ impl ClientList {
     }
 
     /// creates a ClientList from a Vec of StringMaps
-    pub fn from_maps(maps: &Vec<StringMap>) -> ClientList {
+    pub fn from_maps(maps: &[StringMap]) -> ClientList {
         let mut vec = Vec::new();
         for map in maps.iter() {
             let client = Client::from_map(map);
@@ -218,14 +218,14 @@ impl ClientList {
 
     /// creats a JSON String from a ClientList
     pub fn as_json(&self) -> String {
-        json::encode(self).unwrap_or(String::new())
+        json::encode(self).unwrap_or_default()
     }
 }
 
 impl FromStr for ClientList {
     type Err = error::Error;
     fn from_str(s: &str) -> error::Result<Self> {
-        let maps = s.split('|').map(to_map).collect();
+        let maps: Vec<_> = s.split('|').map(to_map).collect();
         Ok(ClientList::from_maps(&maps))
     }
 }

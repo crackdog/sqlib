@@ -64,7 +64,7 @@ impl Channel {
     }
 
     /// Create a new Channel from a given Channel and a map.
-    pub fn update_from_map(channel: Channel, map: &StringMap) -> Channel {
+    pub fn update_from_map(channel: &Channel, map: &StringMap) -> Channel {
         let mut channel = channel.clone();
         channel.mut_from_map(map);
         channel
@@ -95,7 +95,8 @@ impl Channel {
 
     /// Remove all Server Query Clients from the Channel.
     pub fn remove_sq_clients(&mut self) {
-        let new_clients = self.clients
+        let new_clients = self
+            .clients
             .iter()
             .filter(|c| c.is_client())
             .cloned()
@@ -105,7 +106,7 @@ impl Channel {
 
     /// Creates a JSON String from self.
     pub fn as_json(&self) -> String {
-        json::encode(self).unwrap_or(String::new())
+        json::encode(self).unwrap_or_default()
     }
 }
 
@@ -183,7 +184,7 @@ impl ChannelList {
     }
 
     /// creates a ChannelList from a Vec of StringMaps
-    pub fn from_maps(maps: &Vec<StringMap>) -> ChannelList {
+    pub fn from_maps(maps: &[StringMap]) -> ChannelList {
         let mut vec = Vec::new();
         for map in maps.iter() {
             let channel = Channel::from_map(map);
@@ -209,7 +210,7 @@ impl ChannelList {
 
     /// creates a JSON String from a ChannelList
     pub fn as_json(&self) -> String {
-        json::encode(self.as_ref()).unwrap_or(String::new())
+        json::encode(self.as_ref()).unwrap_or_default()
     }
 }
 
@@ -237,7 +238,7 @@ impl AsMut<Vec<Channel>> for ChannelList {
 impl FromStr for ChannelList {
     type Err = error::Error;
     fn from_str(s: &str) -> error::Result<Self> {
-        let maps = s.split('|').map(to_map).collect();
+        let maps: Vec<_> = s.split('|').map(to_map).collect();
         Ok(ChannelList::from_maps(&maps))
     }
 }

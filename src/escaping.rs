@@ -14,7 +14,7 @@
 //! assert_eq!(unescaped_test, unescaped);
 //! ```
 
-const ESCAPE_CHARS: [(char, &'static str); 11] = [
+const ESCAPE_CHARS: [(char, &str); 11] = [
     ('\\', r"\\"),
     (' ', r"\s"),
     ('/', r"\/"),

@@ -8,8 +8,8 @@ use error;
 use error::{Error, SQError};
 use map::*;
 use std::fmt;
-use std::io::BufReader;
 use std::io::prelude::*;
+use std::io::BufReader;
 use std::net;
 use std::string::String;
 
@@ -50,7 +50,7 @@ impl Connection {
 
     /// sends a given command to the Server Query server and returns the answer as a String, or
     /// the error.
-    pub fn send_command<C>(&mut self, command: C) -> error::Result<String>
+    pub fn send_command<C>(&mut self, command: &C) -> error::Result<String>
     where
         C: Command,
     {
@@ -71,13 +71,13 @@ impl Connection {
             if ok {
                 break;
             }
-            result = result + line; // + "\n";
+            result += line; // + "\n";
         }
 
         Ok(result)
     }
 
-    pub fn send_command_to_map<C>(&mut self, command: C) -> error::Result<StringMap>
+    pub fn send_command_to_map<C>(&mut self, command: &C) -> error::Result<StringMap>
     where
         C: Command,
     {
@@ -92,7 +92,7 @@ impl Connection {
     {
         let mut results = Vec::new();
         for cmd in commands {
-            let res = self.send_command(cmd)?;
+            let res = self.send_command(&cmd)?;
             results.push(res);
         }
         Ok(results)
@@ -100,34 +100,36 @@ impl Connection {
 
     /// sends the quit command to the server and shuts the Connection down.
     pub fn quit(&mut self) -> error::Result<()> {
-        self.send_command("quit")?;
+        self.send_command(&"quit")?;
         self.conn.get_ref().shutdown(net::Shutdown::Both)?;
         Ok(())
     }
 
     /// sends the use command with the given id to the server.
     pub fn use_server_id(&mut self, id: u64) -> error::Result<()> {
-        self.send_command(format!("use {}", id)).map(|_| ())
+        self.send_command(&format!("use {}", id)).map(|_| ())
     }
 
     /// sends the login command with the name and password to the server.
     pub fn login(&mut self, name: &str, pw: &str) -> error::Result<()> {
-        self.send_command(format!("login {} {}", name, pw))
+        self.send_command(&format!("login {} {}", name, pw))
             .map(|_| ())
     }
 
     /// tries to change the nickname of the Server Query client.
     pub fn change_nickname(&mut self, nickname: &str) -> error::Result<()> {
-        let map = self.send_command_to_map("whoami")?;
-        let id = map.get("client_id").ok_or("error at collecting client_id")?;
+        let map = self.send_command_to_map(&"whoami")?;
+        let id = map
+            .get("client_id")
+            .ok_or("error at collecting client_id")?;
         let cmd = format!("clientupdate clid={} client_nickname={}", id, nickname);
-        let _ = self.send_command(cmd)?;
+        let _ = self.send_command(&cmd)?;
         Ok(())
     }
 
     /// sends the clientlist command to the server and parses the result.
     pub fn clientlist(&mut self) -> error::Result<ClientList> {
-        let s = self.send_command("clientlist")?;
+        let s = self.send_command(&"clientlist")?;
         let cl = s.parse()?;
         Ok(cl)
     }
@@ -139,7 +141,7 @@ impl Connection {
         let mut clients = self.clientlist()?;
         for client in clients.as_mut().iter_mut() {
             let command = format!("clientinfo clid={}", client.clid);
-            let str = self.send_command(command)?;
+            let str = self.send_command(&command)?;
             let map = to_map(&str);
             client.mut_from_map(&map);
         }
@@ -148,7 +150,7 @@ impl Connection {
 
     /// sends the channellist command to the server and parses the result.
     pub fn channellist(&mut self) -> error::Result<ChannelList> {
-        let s = self.send_command("channellist")?;
+        let s = self.send_command(&"channellist")?;
         let cl = s.parse()?;
         Ok(cl)
     }
